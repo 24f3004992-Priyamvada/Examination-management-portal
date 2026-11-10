@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Student registration{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-6">
+    <div class="card shadow-sm">
+      <div class="card-body p-4">
+        <h4 class="mb-3">Student registration</h4>
+        <form method="post">
+          <div class="mb-3"><label class="form-label">Full name</label>
+            <input name="name" class="form-control" required></div>
+          <div class="mb-3"><label class="form-label">Email</label>
+            <input type="email" name="email" class="form-control" required></div>
+          <div class="mb-3"><label class="form-label">Roll number</label>
+            <input name="roll_no" class="form-control" required></div>
+          <div class="mb-3"><label class="form-label">Contact</label>
+            <input name="contact" class="form-control"></div>
+          <div class="mb-3"><label class="form-label">Password (min 6 characters)</label>
+            <input type="password" name="password" class="form-control" minlength="6" required></div>
+          <button class="btn btn-primary w-100">Register</button>
+        </form>
+        <hr>
+        <a href="{{ url_for('auth.login') }}">Back to login</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
