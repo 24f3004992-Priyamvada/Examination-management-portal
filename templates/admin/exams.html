@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block title %}Examinations{% endblock %}
+{% block content %}
+{% set colours = {"Draft": "secondary", "Slot Creation": "info", "Booking Open": "success", "Closed": "warning", "Completed": "dark"} %}
+{% set actions = {
+  "Draft": [("open_slots", "Open slot creation", "success")],
+  "Slot Creation": [("close_slots", "Close slot creation", "warning")],
+  "Booking Open": [("close_booking", "Close booking", "warning")],
+  "Closed": [("open_slots", "Reopen slot creation", "success"), ("open_booking", "Open booking", "success"), ("complete", "Mark completed", "dark")],
+  "Completed": []
+} %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h3 class="mb-0">Examinations</h3>
+  <a href="{{ url_for('admin.exam_form') }}" class="btn btn-success">+ New examination</a>
+</div>
+
+<form method="get" class="row g-2 mb-3">
+  <div class="col-auto">
+    <input name="q" value="{{ q }}" class="form-control" placeholder="Search by name, ID or course">
+  </div>
+  <div class="col-auto">
+    <button class="btn btn-primary">Search</button>
+    <a href="{{ url_for('admin.exams') }}" class="btn btn-outline-secondary">Clear</a>
+  </div>
+</form>
+
+<table class="table table-bordered bg-white align-middle">
+  <thead class="table-light">
+    <tr>
+      <th>ID</th><th>Course</th><th>Examination</th><th>Type</th><th>Marks</th>
+      <th>Status and controls</th><th>Setup</th><th>Action</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for e in exams %}
+    <tr>
+      <td>{{ e.id }}</td>
+      <td>{{ e.course.code }}</td>
+      <td>
+        {{ e.name }}
+        <small class="text-muted d-block">
+          {{ e.duration }} min<br>
+          Slot creation: {{ e.slot_create_start }} to {{ e.slot_create_end }}<br>
+          Booking: {{ e.booking_start }} to {{ e.booking_end }}
+        </small>
+      </td>
+      <td>{{ e.exam_type }}</td>
+      <td>{{ e.max_marks }}</td>
+      <td>
+        <span class="badge text-bg-{{ colours.get(e.status, 'secondary') }}">{{ e.status }}</span>
+        {% for act, label, colour in actions.get(e.status, []) %}
+        <form method="post" action="{{ url_for('admin.exam_status', exam_id=e.id, action=act) }}" class="mt-1">
+          <button class="btn btn-sm btn-outline-{{ colour }}">{{ label }}</button>
+        </form>
+        {% endfor %}
+      </td>
+      <td>
+        <a class="btn btn-sm btn-outline-secondary mb-1" href="{{ url_for('admin.rubrics', exam_id=e.id) }}">
+          Rubrics ({{ e.rubrics|length }})</a><br>
+        <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('admin.exam_examiners', exam_id=e.id) }}">
+          Examiners ({{ e.assignments|length }})</a>
+      </td>
+      <td>
+        <div class="d-flex gap-2">
+          <a class="btn btn-sm btn-outline-primary" href="{{ url_for('admin.exam_form', exam_id=e.id) }}">Edit</a>
+          <form method="post" action="{{ url_for('admin.exam_delete', exam_id=e.id) }}"
+                onsubmit="return confirm('Delete this examination?')">
+            <button class="btn btn-sm btn-outline-danger">Delete</button>
+          </form>
+        </div>
+      </td>
+    </tr>
+    {% else %}
+    <tr><td colspan="8" class="text-center text-muted">No examinations found.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

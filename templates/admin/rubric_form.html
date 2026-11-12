@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}Edit rubric{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-6">
+    <div class="card shadow-sm">
+      <div class="card-body p-4">
+        <h4 class="mb-1">Edit criterion</h4>
+        <p class="text-muted">Examination: {{ exam.name }} (max {{ exam.max_marks }} marks)</p>
+        <form method="post">
+          <div class="mb-3">
+            <label class="form-label">Criterion name</label>
+            <input name="criterion" class="form-control" value="{{ request.form.get('criterion', rubric.criterion) }}" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Max marks</label>
+            <input type="number" min="1" name="max_marks" class="form-control" value="{{ request.form.get('max_marks', rubric.max_marks) }}" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Weightage (%)</label>
+            <input type="number" step="0.01" min="0" max="100" name="weightage" class="form-control" value="{{ request.form.get('weightage', rubric.weightage) }}">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Description</label>
+            <textarea name="description" rows="3" class="form-control">{{ request.form.get('description', rubric.description or '') }}</textarea>
+          </div>
+          <button class="btn btn-primary">Save</button>
+          <a href="{{ url_for('admin.rubrics', exam_id=exam.id) }}" class="btn btn-outline-secondary">Cancel</a>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}Examiner{% endblock %}
+{% block content %}
+{% set colours = {"Pending": "warning", "Approved": "success", "Rejected": "danger", "Deactivated": "secondary"} %}
+<a href="{{ url_for('admin.examiners') }}" class="btn btn-sm btn-outline-secondary mb-3">&larr; Back to examiners</a>
+
+<div class="card shadow-sm mb-4">
+  <div class="card-body">
+    <h4>{{ examiner.user.name }}
+      <span class="badge text-bg-{{ colours.get(examiner.status, 'secondary') }} fs-6">{{ examiner.status }}</span>
+    </h4>
+    <dl class="row mb-3">
+      <dt class="col-sm-3">Examiner ID</dt><dd class="col-sm-9">{{ examiner.id }}</dd>
+      <dt class="col-sm-3">Email</dt><dd class="col-sm-9">{{ examiner.user.email }}</dd>
+      <dt class="col-sm-3">Department</dt><dd class="col-sm-9">{{ examiner.department }}</dd>
+      <dt class="col-sm-3">Contact</dt><dd class="col-sm-9">{{ examiner.contact or '-' }}</dd>
+      <dt class="col-sm-3">Slots created</dt><dd class="col-sm-9">{{ examiner.slots|length }}</dd>
+    </dl>
+
+    <div class="d-flex gap-2">
+      {% if examiner.status in ['Pending', 'Rejected', 'Deactivated'] %}
+      <form method="post" action="{{ url_for('admin.examiner_action', examiner_id=examiner.id, action='approve') }}">
+        <input type="hidden" name="next" value="{{ url_for('admin.examiner_view', examiner_id=examiner.id) }}">
+        <button class="btn btn-success">{{ 'Approve' if examiner.status == 'Pending' else 'Reactivate' }}</button>
+      </form>
+      {% endif %}
+      {% if examiner.status == 'Pending' %}
+      <form method="post" action="{{ url_for('admin.examiner_action', examiner_id=examiner.id, action='reject') }}">
+        <input type="hidden" name="next" value="{{ url_for('admin.examiner_view', examiner_id=examiner.id) }}">
+        <button class="btn btn-danger">Reject</button>
+      </form>
+      {% endif %}
+      {% if examiner.status == 'Approved' %}
+      <form method="post" action="{{ url_for('admin.examiner_action', examiner_id=examiner.id, action='deactivate') }}"
+            onsubmit="return confirm('Deactivate this examiner?')">
+        <input type="hidden" name="next" value="{{ url_for('admin.examiner_view', examiner_id=examiner.id) }}">
+        <button class="btn btn-outline-danger">Deactivate</button>
+      </form>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<h5>Assigned examinations</h5>
+<table class="table table-bordered bg-white">
+  <thead class="table-light"><tr><th>Exam ID</th><th>Examination</th><th>Course</th><th>Status</th></tr></thead>
+  <tbody>
+    {% for a in examiner.assignments %}
+    <tr><td>{{ a.exam.id }}</td><td>{{ a.exam.name }}</td><td>{{ a.exam.course.code }}</td><td>{{ a.exam.status }}</td></tr>
+    {% else %}
+    <tr><td colspan="4" class="text-center text-muted">Not assigned to any examination.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

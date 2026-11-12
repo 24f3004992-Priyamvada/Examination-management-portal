@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Course{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-6">
+    <div class="card shadow-sm">
+      <div class="card-body p-4">
+        <h4 class="mb-3">{{ 'Edit course' if course else 'New course' }}</h4>
+        <form method="post">
+          <div class="mb-3">
+            <label class="form-label">Course code</label>
+            <input name="code" class="form-control" value="{{ course.code if course else '' }}" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Course name</label>
+            <input name="name" class="form-control" value="{{ course.name if course else '' }}" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Description</label>
+            <textarea name="description" rows="3" class="form-control">{{ course.description if course and course.description else '' }}</textarea>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Status</label>
+            <select name="status" class="form-select">
+              <option {{ 'selected' if not course or course.status == 'Active' }}>Active</option>
+              <option {{ 'selected' if course and course.status == 'Inactive' }}>Inactive</option>
+            </select>
+          </div>
+          <button class="btn btn-primary">Save</button>
+          <a href="{{ url_for('admin.courses') }}" class="btn btn-outline-secondary">Cancel</a>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

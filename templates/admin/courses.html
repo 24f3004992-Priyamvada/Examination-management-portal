@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Courses{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h3 class="mb-0">Courses</h3>
+  <a href="{{ url_for('admin.course_form') }}" class="btn btn-success">+ New course</a>
+</div>
+
+<form method="get" class="row g-2 mb-3">
+  <div class="col-auto">
+    <input name="q" value="{{ q }}" class="form-control" placeholder="Search by code, name or ID">
+  </div>
+  <div class="col-auto">
+    <button class="btn btn-primary">Search</button>
+    <a href="{{ url_for('admin.courses') }}" class="btn btn-outline-secondary">Clear</a>
+  </div>
+</form>
+
+<table class="table table-bordered bg-white align-middle">
+  <thead class="table-light">
+    <tr><th>ID</th><th>Code</th><th>Name</th><th>Description</th><th>Status</th><th>Action</th></tr>
+  </thead>
+  <tbody>
+    {% for c in courses %}
+    <tr>
+      <td>{{ c.id }}</td>
+      <td>{{ c.code }}</td>
+      <td>{{ c.name }}</td>
+      <td>{{ c.description or '-' }}</td>
+      <td>
+        <span class="badge {{ 'bg-success' if c.status == 'Active' else 'bg-secondary' }}">{{ c.status }}</span>
+      </td>
+      <td class="d-flex gap-2">
+        <a class="btn btn-sm btn-outline-primary" href="{{ url_for('admin.course_form', course_id=c.id) }}">Edit</a>
+        <form method="post" action="{{ url_for('admin.course_delete', course_id=c.id) }}"
+              onsubmit="return confirm('Delete this course?')">
+          <button class="btn btn-sm btn-outline-danger">Delete</button>
+        </form>
+      </td>
+    </tr>
+    {% else %}
+    <tr><td colspan="6" class="text-center text-muted">No courses found.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

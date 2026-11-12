@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}Bookings{% endblock %}
+{% block content %}
+<h3 class="mb-3">All bookings</h3>
+
+<form method="get" class="row g-2 mb-3">
+  <div class="col-auto">
+    <input name="q" value="{{ q }}" class="form-control" placeholder="Search by student, roll no or booking ID">
+  </div>
+  <div class="col-auto">
+    <select name="exam" class="form-select">
+      <option value="">All examinations</option>
+      {% for e in exams %}
+      <option value="{{ e.id }}" {{ 'selected' if exam_id == e.id|string }}>{{ e.name }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="col-auto">
+    <select name="status" class="form-select">
+      <option value="">All statuses</option>
+      {% for s in ["Booked", "Cancelled", "Completed"] %}
+      <option {{ 'selected' if status == s }}>{{ s }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  {% if student_id %}<input type="hidden" name="student" value="{{ student_id }}">{% endif %}
+  <div class="col-auto">
+    <button class="btn btn-primary">Filter</button>
+    <a href="{{ url_for('admin.bookings') }}" class="btn btn-outline-secondary">Clear</a>
+  </div>
+</form>
+{% if student_id %}<p class="text-muted">Showing bookings for student ID {{ student_id }}.</p>{% endif %}
+
+<table class="table table-bordered bg-white align-middle">
+  <thead class="table-light">
+    <tr><th>Booking ID</th><th>Student</th><th>Examination</th><th>Slot date and time</th>
+        <th>Examiner</th><th>Booked on</th><th>Status</th></tr>
+  </thead>
+  <tbody>
+    {% for b in bookings %}
+    <tr>
+      <td>{{ b.id }}</td>
+      <td>{{ b.student.user.name }} <small class="text-muted">({{ b.student.roll_no }})</small></td>
+      <td>{{ b.exam.name }}</td>
+      <td>{{ b.slot.date }}, {{ b.slot.start_time.strftime('%H:%M') }} - {{ b.slot.end_time.strftime('%H:%M') }}</td>
+      <td>{{ b.slot.examiner.user.name }}</td>
+      <td>{{ b.booked_on.strftime('%Y-%m-%d %H:%M') }}</td>
+      <td>{{ b.status }}</td>
+    </tr>
+    {% else %}
+    <tr><td colspan="7" class="text-center text-muted">No bookings found.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

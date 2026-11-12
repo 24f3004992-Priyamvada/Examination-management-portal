@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}Slots{% endblock %}
+{% block content %}
+<h3 class="mb-3">All examination slots</h3>
+
+<form method="get" class="row g-2 mb-3">
+  <div class="col-auto">
+    <select name="exam" class="form-select">
+      <option value="">All examinations</option>
+      {% for e in exams %}
+      <option value="{{ e.id }}" {{ 'selected' if exam_id == e.id|string }}>{{ e.name }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="col-auto">
+    <select name="examiner" class="form-select">
+      <option value="">All examiners</option>
+      {% for p in examiners %}
+      <option value="{{ p.id }}" {{ 'selected' if examiner_id == p.id|string }}>{{ p.user.name }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="col-auto">
+    <select name="status" class="form-select">
+      <option value="">All statuses</option>
+      {% for s in ["Available", "Full", "Cancelled", "Completed"] %}
+      <option {{ 'selected' if status == s }}>{{ s }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="col-auto">
+    <button class="btn btn-primary">Filter</button>
+    <a href="{{ url_for('admin.slots') }}" class="btn btn-outline-secondary">Clear</a>
+  </div>
+</form>
+
+<table class="table table-bordered bg-white align-middle">
+  <thead class="table-light">
+    <tr><th>Slot ID</th><th>Examination</th><th>Examiner</th><th>Date</th><th>Time</th>
+        <th>Capacity</th><th>Available</th><th>Booked</th><th>Status</th></tr>
+  </thead>
+  <tbody>
+    {% for s in slots %}
+    <tr>
+      <td>{{ s.id }}</td>
+      <td>{{ s.exam.name }}</td>
+      <td>{{ s.examiner.user.name }}</td>
+      <td>{{ s.date }}</td>
+      <td>{{ s.start_time.strftime('%H:%M') }} - {{ s.end_time.strftime('%H:%M') }}</td>
+      <td>{{ s.capacity }}</td>
+      <td>{{ s.available_seats }}</td>
+      <td>{{ s.bookings|selectattr('status', 'equalto', 'Booked')|list|length }}</td>
+      <td>{{ s.status }}</td>
+    </tr>
+    {% else %}
+    <tr><td colspan="9" class="text-center text-muted">No slots found.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

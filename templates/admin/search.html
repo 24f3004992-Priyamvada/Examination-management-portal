@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Search{% endblock %}
+{% block content %}
+<h3 class="mb-3">Search</h3>
+{% if not q %}
+<p class="text-muted">Type a name or ID in the search box at the top.</p>
+{% else %}
+<p class="text-muted">Results for "{{ q }}"</p>
+
+<h5>Students ({{ results.students|length }})</h5>
+<table class="table table-sm table-bordered bg-white">
+  <tbody>
+    {% for s in results.students %}
+    <tr><td>{{ s.id }}</td><td>{{ s.user.name }}</td><td>{{ s.roll_no }}</td><td>{{ s.user.email }}</td>
+        <td><a href="{{ url_for('admin.bookings', student=s.id) }}">Bookings</a></td></tr>
+    {% else %}<tr><td class="text-muted">No students found.</td></tr>{% endfor %}
+  </tbody>
+</table>
+
+<h5>Examiners ({{ results.examiners|length }})</h5>
+<table class="table table-sm table-bordered bg-white">
+  <tbody>
+    {% for p in results.examiners %}
+    <tr><td>{{ p.id }}</td><td>{{ p.user.name }}</td><td>{{ p.department }}</td><td>{{ p.status }}</td>
+        <td><a href="{{ url_for('admin.examiner_view', examiner_id=p.id) }}">View</a></td></tr>
+    {% else %}<tr><td class="text-muted">No examiners found.</td></tr>{% endfor %}
+  </tbody>
+</table>
+
+<h5>Examinations ({{ results.exams|length }})</h5>
+<table class="table table-sm table-bordered bg-white">
+  <tbody>
+    {% for e in results.exams %}
+    <tr><td>{{ e.id }}</td><td>{{ e.name }}</td><td>{{ e.course.code }}</td><td>{{ e.status }}</td>
+        <td><a href="{{ url_for('admin.exam_form', exam_id=e.id) }}">Edit</a></td></tr>
+    {% else %}<tr><td class="text-muted">No examinations found.</td></tr>{% endfor %}
+  </tbody>
+</table>
+
+<h5>Bookings ({{ results.bookings|length }})</h5>
+<table class="table table-sm table-bordered bg-white">
+  <tbody>
+    {% for b in results.bookings %}
+    <tr><td>{{ b.id }}</td><td>{{ b.student.user.name }}</td><td>{{ b.exam.name }}</td><td>{{ b.status }}</td></tr>
+    {% else %}<tr><td class="text-muted">No bookings found.</td></tr>{% endfor %}
+  </tbody>
+</table>
+{% endif %}
+{% endblock %}

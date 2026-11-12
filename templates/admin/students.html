@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Students{% endblock %}
+{% block content %}
+<h3 class="mb-3">Registered students</h3>
+
+<form method="get" class="row g-2 mb-3">
+  <div class="col-auto">
+    <input name="q" value="{{ q }}" class="form-control" placeholder="Search by name, roll no, email or ID">
+  </div>
+  <div class="col-auto">
+    <select name="exam" class="form-select">
+      <option value="">All examinations</option>
+      {% for e in exams %}
+      <option value="{{ e.id }}" {{ 'selected' if exam_id == e.id|string }}>{{ e.id }} - {{ e.name }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="col-auto">
+    <button class="btn btn-primary">Search</button>
+    <a href="{{ url_for('admin.students') }}" class="btn btn-outline-secondary">Clear</a>
+  </div>
+</form>
+
+<table class="table table-bordered bg-white align-middle">
+  <thead class="table-light">
+    <tr><th>ID</th><th>Name</th><th>Roll no</th><th>Email</th><th>Contact</th><th>Bookings</th><th>Action</th></tr>
+  </thead>
+  <tbody>
+    {% for s in students %}
+    <tr>
+      <td>{{ s.id }}</td>
+      <td>{{ s.user.name }}</td>
+      <td>{{ s.roll_no }}</td>
+      <td>{{ s.user.email }}</td>
+      <td>{{ s.contact or '-' }}</td>
+      <td>{{ s.bookings|length }}</td>
+      <td><a class="btn btn-sm btn-outline-primary" href="{{ url_for('admin.bookings', student=s.id) }}">View bookings</a></td>
+    </tr>
+    {% else %}
+    <tr><td colspan="7" class="text-center text-muted">No students found.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

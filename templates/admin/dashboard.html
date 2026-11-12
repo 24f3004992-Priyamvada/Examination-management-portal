@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Admin dashboard{% endblock %}
+{% block content %}
+<h3 class="mb-4">Admin dashboard</h3>
+
+{% if pending %}
+<div class="alert alert-warning">
+  {{ pending }} examiner{{ 's are' if pending != 1 else ' is' }} waiting for approval.
+  <a href="{{ url_for('admin.examiners', status='Pending') }}">Review now</a>
+</div>
+{% endif %}
+
+<div class="row g-3">
+  {% for label, value in stats %}
+  <div class="col-6 col-md-4">
+    <div class="card shadow-sm text-center">
+      <div class="card-body">
+        <div class="display-6">{{ value }}</div>
+        <div class="text-muted">{{ label }}</div>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}

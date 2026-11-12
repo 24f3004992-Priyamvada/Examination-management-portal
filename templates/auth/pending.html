@@ -1,8 +1,11 @@
 {% extends "base.html" %}
 {% block content %}
 <div class="alert alert-warning">
-  <h5>Waiting for approval</h5>
-  <p class="mb-0">Your examiner account has not been approved by the admin yet (or has been deactivated).
-  Please check again later.</p>
+  <h5>Access not available</h5>
+  <p class="mb-0">
+    Your examiner account status is
+    <strong>{{ current_user.examiner_profile.status if current_user.role == 'examiner' else 'unknown' }}</strong>.
+    You can use the dashboard once the admin approves your account.
+  </p>
 </div>
 {% endblock %}
