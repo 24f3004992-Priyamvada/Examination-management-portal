@@ -29,6 +29,12 @@
           <input class="form-control form-control-sm me-2" name="q" placeholder="Search anything here...">
           <button class="btn btn-sm btn-outline-light">Search</button>
         </form>
+        {% elif current_user.is_authenticated and current_user.role == 'examiner' %}
+        <ul class="navbar-nav me-auto">
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('examiner.dashboard') }}">Home</a></li>
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('examiner.slots') }}">Slots</a></li>
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('examiner.evaluations') }}">Evaluations</a></li>
+        </ul>
         {% else %}
         <ul class="navbar-nav me-auto"></ul>
         {% endif %}

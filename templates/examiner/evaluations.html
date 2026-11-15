@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Evaluations{% endblock %}
+{% block content %}
+<h3 class="mb-3">Evaluations</h3>
+
+<form method="get" class="row g-2 mb-3">
+  <div class="col-auto">
+    <select name="status" class="form-select">
+      <option value="">All</option>
+      <option value="Booked" {{ 'selected' if status == 'Booked' }}>Pending</option>
+      <option value="Completed" {{ 'selected' if status == 'Completed' }}>Evaluated</option>
+    </select>
+  </div>
+  <div class="col-auto">
+    <button class="btn btn-primary">Filter</button>
+    <a href="{{ url_for('examiner.evaluations') }}" class="btn btn-outline-secondary">Clear</a>
+  </div>
+</form>
+
+<table class="table table-bordered bg-white align-middle">
+  <thead class="table-light">
+    <tr><th>Booking ID</th><th>Student</th><th>Roll no</th><th>Examination</th>
+        <th>Slot</th><th>Status</th><th>Marks</th><th>Action</th></tr>
+  </thead>
+  <tbody>
+    {% for b in bookings %}
+    <tr>
+      <td>{{ b.id }}</td>
+      <td>{{ b.student.user.name }}</td>
+      <td>{{ b.student.roll_no }}</td>
+      <td>{{ b.exam.name }}</td>
+      <td>{{ b.slot.date }}, {{ b.slot.start_time.strftime('%H:%M') }}</td>
+      <td>{{ 'Evaluated' if b.status == 'Completed' else 'Pending' }}</td>
+      <td>
+        {% if b.evaluation %}{{ b.evaluation.total_marks }} / {{ b.exam.rubrics|sum(attribute='max_marks') }}{% else %}-{% endif %}
+      </td>
+      <td>
+        {% if b.exam.status in ['Closed', 'Completed'] %}
+        <a class="btn btn-sm btn-success" href="{{ url_for('examiner.evaluate', booking_id=b.id) }}">
+          {{ 'View' if b.exam.results_published else ('Edit marks' if b.evaluation else 'Evaluate') }}</a>
+        {% else %}
+        <span class="text-muted small">Opens after booking closes</span>
+        {% endif %}
+      </td>
+    </tr>
+    {% else %}
+    <tr><td colspan="8" class="text-center text-muted">No bookings in your slots yet.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

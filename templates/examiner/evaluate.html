@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Evaluate{% endblock %}
+{% block content %}
+<a href="{{ url_for('examiner.slot_students', slot_id=booking.slot_id) }}" class="btn btn-sm btn-outline-secondary mb-3">&larr; Back</a>
+<h3>Evaluate: {{ booking.student.user.name }}</h3>
+<p class="text-muted">
+  Roll no {{ booking.student.roll_no }} | {{ exam.name }} |
+  {{ booking.slot.date }}, {{ booking.slot.start_time.strftime('%H:%M') }} - {{ booking.slot.end_time.strftime('%H:%M') }}
+</p>
+{% if locked %}
+<div class="alert alert-info">Results are published, so this evaluation is read-only.</div>
+{% endif %}
+
+<form method="post">
+  <table class="table table-bordered bg-white align-middle">
+    <thead class="table-light">
+      <tr><th>Criterion</th><th>Description</th><th>Max marks</th><th style="width:160px">Awarded marks</th></tr>
+    </thead>
+    <tbody>
+      {% for r in rubrics %}
+      <tr>
+        <td>{{ r.criterion }}</td>
+        <td>{{ r.description or '-' }}</td>
+        <td>{{ r.max_marks }}</td>
+        <td>
+          <input type="number" step="0.5" min="0" max="{{ r.max_marks }}"
+                 name="mark_{{ r.id }}" class="form-control" required {{ 'disabled' if locked }}
+                 value="{{ request.form.get('mark_%d'|format(r.id), existing.get(r.id, '')) }}">
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <div class="mb-3">
+    <label class="form-label">Remarks</label>
+    <textarea name="remarks" rows="3" class="form-control" required {{ 'disabled' if locked }}>{{ request.form.get('remarks', evaluation.remarks if evaluation else '') }}</textarea>
+  </div>
+
+  {% if not locked %}
+  <button class="btn btn-primary">Submit marks</button>
+  {% endif %}
+  <a href="{{ url_for('examiner.slot_students', slot_id=booking.slot_id) }}" class="btn btn-outline-secondary">Cancel</a>
+</form>
+{% endblock %}

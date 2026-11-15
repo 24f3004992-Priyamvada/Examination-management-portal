@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Booked students{% endblock %}
+{% block content %}
+<a href="{{ url_for('examiner.slots') }}" class="btn btn-sm btn-outline-secondary mb-3">&larr; Back to slots</a>
+<h3>Booked students</h3>
+<p class="text-muted">
+  {{ slot.exam.name }} | {{ slot.date }}, {{ slot.start_time.strftime('%H:%M') }} - {{ slot.end_time.strftime('%H:%M') }}
+  | Capacity {{ slot.capacity }} | Available {{ slot.available_seats }} | Slot status: {{ slot.status }}
+</p>
+
+<table class="table table-bordered bg-white align-middle">
+  <thead class="table-light">
+    <tr><th>Booking ID</th><th>Student</th><th>Roll no</th><th>Contact</th><th>Booked on</th>
+        <th>Evaluation</th><th>Action</th></tr>
+  </thead>
+  <tbody>
+    {% for b in bookings %}
+    <tr>
+      <td>{{ b.id }}</td>
+      <td>{{ b.student.user.name }}</td>
+      <td>{{ b.student.roll_no }}</td>
+      <td>{{ b.student.contact or '-' }}</td>
+      <td>{{ b.booked_on.strftime('%Y-%m-%d %H:%M') }}</td>
+      <td>
+        {% if b.evaluation %}
+        {{ b.evaluation.total_marks }} / {{ b.exam.rubrics|sum(attribute='max_marks') }}
+        {% else %}<span class="text-muted">Pending</span>{% endif %}
+      </td>
+      <td>
+        {% if b.exam.status in ['Closed', 'Completed'] %}
+        <a class="btn btn-sm btn-success"
+           href="{{ url_for('examiner.evaluate', booking_id=b.id) }}">
+          {{ 'View' if b.exam.results_published else ('Edit marks' if b.evaluation else 'Evaluate') }}</a>
+        {% else %}
+        <span class="text-muted small">Opens after booking closes</span>
+        {% endif %}
+      </td>
+    </tr>
+    {% else %}
+    <tr><td colspan="7" class="text-center text-muted">No students have booked this slot yet.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}My slots{% endblock %}
+{% block content %}
+<h3 class="mb-3">My slots</h3>
+
+<form method="get" class="row g-2 mb-3">
+  <div class="col-auto">
+    <select name="exam" class="form-select">
+      <option value="">All examinations</option>
+      {% for e in exams %}
+      <option value="{{ e.id }}" {{ 'selected' if exam_id == e.id|string }}>{{ e.name }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="col-auto">
+    <button class="btn btn-primary">Filter</button>
+    <a href="{{ url_for('examiner.slots') }}" class="btn btn-outline-secondary">Clear</a>
+  </div>
+</form>
+
+<table class="table table-bordered bg-white align-middle">
+  <thead class="table-light">
+    <tr><th>Slot ID</th><th>Examination</th><th>Date</th><th>Time</th><th>Capacity</th>
+        <th>Booked</th><th>Available</th><th>Status</th><th>Action</th></tr>
+  </thead>
+  <tbody>
+    {% for s, booked, changeable in rows %}
+    <tr>
+      <td>{{ s.id }}</td>
+      <td>{{ s.exam.name }}</td>
+      <td>{{ s.date }}</td>
+      <td>{{ s.start_time.strftime('%H:%M') }} - {{ s.end_time.strftime('%H:%M') }}</td>
+      <td>{{ s.capacity }}</td>
+      <td>{{ booked }}</td>
+      <td>{{ s.available_seats }}</td>
+      <td>{{ s.status }}</td>
+      <td>
+        <div class="d-flex gap-2 flex-wrap">
+          <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('examiner.slot_students', slot_id=s.id) }}">Students</a>
+          {% if changeable %}
+          <a class="btn btn-sm btn-outline-primary" href="{{ url_for('examiner.slot_form', slot_id=s.id) }}">Edit</a>
+          <form method="post" action="{{ url_for('examiner.slot_delete', slot_id=s.id) }}"
+                onsubmit="return confirm('Delete this slot?')">
+            <button class="btn btn-sm btn-outline-danger">Delete</button>
+          </form>
+          {% else %}
+          <span class="text-muted small align-self-center">Locked</span>
+          {% endif %}
+        </div>
+      </td>
+    </tr>
+    {% else %}
+    <tr><td colspan="9" class="text-center text-muted">No slots yet. Use "Fill availability" on the Home page.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

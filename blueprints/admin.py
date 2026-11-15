@@ -476,3 +476,24 @@ def search():
                          .limit(20).all()),
         }
     return render_template("admin/search.html", q=q, results=results)
+
+@admin_bp.route("/exams/<int:exam_id>/publish", methods=["POST"])
+@role_required("admin")
+def exam_publish(exam_id):
+    exam = db.get_or_404(Exam, exam_id)
+    active = [b for b in exam.bookings if b.status != "Cancelled"]
+    if exam.results_published:
+        exam.results_published = False
+        db.session.commit()
+        flash("Results unpublished. Examiners can edit evaluations again.", "success")
+    elif exam.status not in ("Closed", "Completed"):
+        flash("Close booking before publishing results.", "danger")
+    elif not active:
+        flash("There are no bookings to publish results for.", "danger")
+    elif any(b.status == "Booked" for b in active):
+        flash("Some students have not been evaluated yet.", "danger")
+    else:
+        exam.results_published = True
+        db.session.commit()
+        flash("Results published. Students can now see their marks and remarks.", "success")
+    return redirect(url_for("admin.exams"))

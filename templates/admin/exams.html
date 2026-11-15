@@ -48,11 +48,18 @@
       <td>{{ e.max_marks }}</td>
       <td>
         <span class="badge text-bg-{{ colours.get(e.status, 'secondary') }}">{{ e.status }}</span>
+        {% if e.results_published %}<span class="badge text-bg-primary">Results published</span>{% endif %}
         {% for act, label, colour in actions.get(e.status, []) %}
         <form method="post" action="{{ url_for('admin.exam_status', exam_id=e.id, action=act) }}" class="mt-1">
           <button class="btn btn-sm btn-outline-{{ colour }}">{{ label }}</button>
         </form>
         {% endfor %}
+        {% if e.status in ['Closed', 'Completed'] %}
+        <form method="post" action="{{ url_for('admin.exam_publish', exam_id=e.id) }}" class="mt-1">
+          <button class="btn btn-sm btn-outline-primary">
+            {{ 'Unpublish results' if e.results_published else 'Publish results' }}</button>
+        </form>
+        {% endif %}
       </td>
       <td>
         <a class="btn btn-sm btn-outline-secondary mb-1" href="{{ url_for('admin.rubrics', exam_id=e.id) }}">
