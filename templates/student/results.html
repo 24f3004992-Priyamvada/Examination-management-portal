@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Results{% endblock %}
+{% block content %}
+<h3 class="mb-3">Published results and feedback</h3>
+{% for b in results %}
+{% set max_total = b.exam.rubrics|sum(attribute='max_marks') %}
+<div class="card shadow-sm mb-4">
+  <div class="card-body">
+    <h5>{{ b.exam.name }}
+      <span class="badge text-bg-success">{{ b.evaluation.total_marks }} / {{ max_total }}</span>
+    </h5>
+    <p class="text-muted">
+      {{ b.exam.course.code }} | {{ b.slot.date }} | Examiner: {{ b.slot.examiner.user.name }}
+    </p>
+    <table class="table table-sm table-bordered">
+      <thead class="table-light"><tr><th>Criterion</th><th>Awarded</th><th>Maximum</th></tr></thead>
+      <tbody>
+        {% for s in b.evaluation.scores %}
+        <tr><td>{{ s.rubric.criterion }}</td><td>{{ s.marks }}</td><td>{{ s.rubric.max_marks }}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <p class="mb-0"><strong>Examiner remarks:</strong> {{ b.evaluation.remarks }}</p>
+  </div>
+</div>
+{% else %}
+<div class="alert alert-info">No results have been published yet.</div>
+{% endfor %}
+{% endblock %}

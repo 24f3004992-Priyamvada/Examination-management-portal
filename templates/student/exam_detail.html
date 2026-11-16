@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}{{ exam.name }}{% endblock %}
+{% block content %}
+<a href="{{ url_for('student.exams') }}" class="btn btn-sm btn-outline-secondary mb-3">&larr; Back to examinations</a>
+<h3>{{ exam.name }}</h3>
+<p class="text-muted">
+  {{ exam.course.code }} - {{ exam.course.name }} | {{ exam.exam_type }} | {{ exam.duration }} minutes |
+  {{ exam.max_marks }} marks<br>
+  Booking window: {{ exam.booking_start }} to {{ exam.booking_end }} | Status: {{ exam.status }}
+</p>
+
+{% if my_booking %}
+<div class="alert alert-success">
+  You have booked slot {{ my_booking.slot_id }} for this examination
+  ({{ my_booking.slot.date }}, {{ my_booking.slot.start_time.strftime('%H:%M') }}).
+  <a href="{{ url_for('student.bookings') }}">Manage booking</a>
+</div>
+{% elif not is_open %}
+<div class="alert alert-warning">Booking is not open for this examination right now.</div>
+{% endif %}
+
+<h5>Slots</h5>
+<table class="table table-bordered bg-white align-middle">
+  <thead class="table-light">
+    <tr><th>Slot ID</th><th>Date</th><th>Time</th><th>Examiner</th><th>Capacity</th><th>Seats left</th><th>Status</th><th>Action</th></tr>
+  </thead>
+  <tbody>
+    {% for s, bookable in rows %}
+    <tr>
+      <td>{{ s.id }}</td>
+      <td>{{ s.date }}</td>
+      <td>{{ s.start_time.strftime('%H:%M') }} - {{ s.end_time.strftime('%H:%M') }}</td>
+      <td>{{ s.examiner.user.name }}</td>
+      <td>{{ s.capacity }}</td>
+      <td>{{ s.available_seats }}</td>
+      <td>{{ s.status }}</td>
+      <td>
+        {% if bookable %}
+        <a class="btn btn-sm btn-success" href="{{ url_for('student.book', slot_id=s.id) }}">Book</a>
+        {% else %}<span class="text-muted small">Unavailable</span>{% endif %}
+      </td>
+    </tr>
+    {% else %}
+    <tr><td colspan="8" class="text-center text-muted">No slots have been created yet.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<h5 class="mt-4">Evaluation criteria</h5>
+<table class="table table-sm table-bordered bg-white">
+  <thead class="table-light"><tr><th>Criterion</th><th>Max marks</th><th>Description</th></tr></thead>
+  <tbody>
+    {% for r in exam.rubrics %}
+    <tr><td>{{ r.criterion }}</td><td>{{ r.max_marks }}</td><td>{{ r.description or '-' }}</td></tr>
+    {% else %}
+    <tr><td colspan="3" class="text-muted">No criteria published.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

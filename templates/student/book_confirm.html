@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Confirm booking{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-6">
+    <div class="card shadow-sm">
+      <div class="card-body p-4">
+        <h4 class="mb-3">Confirm your booking</h4>
+        <dl class="row">
+          <dt class="col-sm-4">Examination</dt><dd class="col-sm-8">{{ slot.exam.name }} ({{ slot.exam.course.code }})</dd>
+          <dt class="col-sm-4">Date</dt><dd class="col-sm-8">{{ slot.date }}</dd>
+          <dt class="col-sm-4">Time</dt><dd class="col-sm-8">{{ slot.start_time.strftime('%H:%M') }} - {{ slot.end_time.strftime('%H:%M') }}</dd>
+          <dt class="col-sm-4">Examiner</dt><dd class="col-sm-8">{{ slot.examiner.user.name }}</dd>
+          <dt class="col-sm-4">Seats left</dt><dd class="col-sm-8">{{ slot.available_seats }}</dd>
+        </dl>
+        <p class="text-muted">You can cancel until {{ slot.exam.booking_end }} (the booking deadline).</p>
+        <form method="post">
+          <button class="btn btn-success">Confirm booking</button>
+          <a href="{{ url_for('student.exam_detail', exam_id=slot.exam_id) }}" class="btn btn-outline-secondary">Back</a>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

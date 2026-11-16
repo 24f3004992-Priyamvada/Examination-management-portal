@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block title %}Student dashboard{% endblock %}
+{% block content %}
+<h3 class="mb-4">Student dashboard</h3>
+
+<div class="row g-3 mb-4">
+  {% for label, value in stats %}
+  <div class="col-6 col-md-3">
+    <div class="card shadow-sm text-center">
+      <div class="card-body">
+        <div class="display-6">{{ value }}</div>
+        <div class="text-muted">{{ label }}</div>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+<h5>Available examination slots</h5>
+<table class="table table-bordered bg-white align-middle">
+  <thead class="table-light">
+    <tr><th>Slot ID</th><th>Examination</th><th>Date</th><th>Time</th><th>Examiner</th><th>Seats left</th><th>Action</th></tr>
+  </thead>
+  <tbody>
+    {% for s in slots %}
+    <tr>
+      <td>{{ s.id }}</td>
+      <td>{{ s.exam.name }}</td>
+      <td>{{ s.date }}</td>
+      <td>{{ s.start_time.strftime('%H:%M') }} - {{ s.end_time.strftime('%H:%M') }}</td>
+      <td>{{ s.examiner.user.name }}</td>
+      <td>{{ s.available_seats }}</td>
+      <td><a class="btn btn-sm btn-success" href="{{ url_for('student.book', slot_id=s.id) }}">Book</a></td>
+    </tr>
+    {% else %}
+    <tr><td colspan="7" class="text-center text-muted">No slots are available to book right now.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% if total_slots > slots|length %}
+<p><a href="{{ url_for('student.exams', open=1) }}">See all {{ total_slots }} available slots by examination</a></p>
+{% endif %}
+
+<h5 class="mt-4">Booked slots</h5>
+<table class="table table-bordered bg-white align-middle">
+  <thead class="table-light">
+    <tr><th>Booking ID</th><th>Examination</th><th>Date</th><th>Time</th><th>Examiner</th><th></th><th>Action</th></tr>
+  </thead>
+  <tbody>
+    {% for b, is_upcoming, cancellable in booked_rows %}
+    <tr>
+      <td>{{ b.id }}</td>
+      <td>{{ b.exam.name }}</td>
+      <td>{{ b.slot.date }}</td>
+      <td>{{ b.slot.start_time.strftime('%H:%M') }} - {{ b.slot.end_time.strftime('%H:%M') }}</td>
+      <td>{{ b.slot.examiner.user.name }}</td>
+      <td><span class="badge text-bg-{{ 'primary' if is_upcoming else 'secondary' }}">{{ 'Upcoming' if is_upcoming else 'Past' }}</span></td>
+      <td>
+        {% if cancellable %}
+        <a class="btn btn-sm btn-outline-danger" href="{{ url_for('student.cancel', booking_id=b.id) }}">Cancel</a>
+        {% else %}<span class="text-muted small">Cannot cancel</span>{% endif %}
+      </td>
+    </tr>
+    {% else %}
+    <tr><td colspan="7" class="text-center text-muted">You have no booked slots.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<h5 class="mt-4">Published results</h5>
+<table class="table table-bordered bg-white align-middle">
+  <thead class="table-light"><tr><th>Examination</th><th>Marks</th><th>Remarks</th></tr></thead>
+  <tbody>
+    {% for b in results %}
+    <tr>
+      <td>{{ b.exam.name }}</td>
+      <td>{{ b.evaluation.total_marks }} / {{ b.exam.rubrics|sum(attribute='max_marks') }}</td>
+      <td>{{ b.evaluation.remarks }}</td>
+    </tr>
+    {% else %}
+    <tr><td colspan="3" class="text-center text-muted">No results have been published yet.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% if results %}<a href="{{ url_for('student.results') }}">View full results</a>{% endif %}
+{% endblock %}

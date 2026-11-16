@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}Examinations{% endblock %}
+{% block content %}
+<h3 class="mb-3">Examinations</h3>
+
+<form method="get" class="row g-2 mb-3">
+  <div class="col-auto">
+    <input name="q" value="{{ q }}" class="form-control" placeholder="Search by name, course or ID">
+  </div>
+  <div class="col-auto">
+    <select name="type" class="form-select">
+      <option value="">All types</option>
+      {% for t in exam_types %}<option {{ 'selected' if etype == t }}>{{ t }}</option>{% endfor %}
+    </select>
+  </div>
+  <div class="col-auto">
+    <select name="course" class="form-select">
+      <option value="">All courses</option>
+      {% for c in courses %}
+      <option value="{{ c.id }}" {{ 'selected' if course_id == c.id|string }}>{{ c.code }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="col-auto d-flex align-items-center">
+    <div class="form-check">
+      <input class="form-check-input" type="checkbox" name="open" value="1" id="onlyOpen" {{ 'checked' if only_open }}>
+      <label class="form-check-label" for="onlyOpen">Open for booking only</label>
+    </div>
+  </div>
+  <div class="col-auto">
+    <button class="btn btn-primary">Filter</button>
+    <a href="{{ url_for('student.exams') }}" class="btn btn-outline-secondary">Clear</a>
+  </div>
+</form>
+
+<table class="table table-bordered bg-white align-middle">
+  <thead class="table-light">
+    <tr><th>ID</th><th>Course</th><th>Examination</th><th>Type</th><th>Duration</th>
+        <th>Max marks</th><th>Booking window</th><th>Status</th><th>Action</th></tr>
+  </thead>
+  <tbody>
+    {% for e in exams %}
+    <tr>
+      <td>{{ e.id }}</td>
+      <td>{{ e.course.code }}</td>
+      <td>{{ e.name }}</td>
+      <td>{{ e.exam_type }}</td>
+      <td>{{ e.duration }} min</td>
+      <td>{{ e.max_marks }}</td>
+      <td>{{ e.booking_start }} to {{ e.booking_end }}</td>
+      <td>
+        {{ e.status }}
+        {% if e.id in mine %}<span class="badge text-bg-success">Booked</span>{% endif %}
+      </td>
+      <td>
+        <a class="btn btn-sm {{ 'btn-success' if e.id in open_ids and e.id not in mine else 'btn-outline-secondary' }}"
+           href="{{ url_for('student.exam_detail', exam_id=e.id) }}">
+          {{ 'View slots and book' if e.id in open_ids and e.id not in mine else 'Details' }}</a>
+      </td>
+    </tr>
+    {% else %}
+    <tr><td colspan="9" class="text-center text-muted">No examinations found.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}History{% endblock %}
+{% block content %}
+{% set colours = {"Booked": "primary", "Completed": "success", "Cancelled": "secondary"} %}
+<h3 class="mb-3">Booking and examination history</h3>
+<table class="table table-bordered bg-white align-middle">
+  <thead class="table-light">
+    <tr><th>Booking ID</th><th>Examination</th><th>Slot</th><th>Booked on</th><th>Status</th><th>Marks</th><th>Activity</th></tr>
+  </thead>
+  <tbody>
+    {% for b in bookings %}
+    <tr>
+      <td>{{ b.id }}</td>
+      <td>{{ b.exam.name }}</td>
+      <td>{{ b.slot.date }}, {{ b.slot.start_time.strftime('%H:%M') }} - {{ b.slot.end_time.strftime('%H:%M') }}</td>
+      <td>{{ b.booked_on.strftime('%Y-%m-%d %H:%M') }}</td>
+      <td><span class="badge text-bg-{{ colours.get(b.status, 'secondary') }}">{{ b.status }}</span></td>
+      <td>
+        {% if b.evaluation and b.exam.results_published %}
+        {{ b.evaluation.total_marks }} / {{ b.exam.rubrics|sum(attribute='max_marks') }}
+        {% else %}-{% endif %}
+      </td>
+      <td>
+        {% for h in b.history|sort(attribute='timestamp') %}
+        <div class="small text-muted">{{ h.timestamp.strftime('%d %b %H:%M') }}: {{ h.action }}</div>
+        {% endfor %}
+      </td>
+    </tr>
+    {% else %}
+    <tr><td colspan="7" class="text-center text-muted">No bookings yet.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

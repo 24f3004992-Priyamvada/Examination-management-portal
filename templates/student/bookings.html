@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}My bookings{% endblock %}
+{% block content %}
+<h3 class="mb-3">My bookings (examination schedule)</h3>
+<table class="table table-bordered bg-white align-middle">
+  <thead class="table-light">
+    <tr><th>Booking ID</th><th>Examination</th><th>Date</th><th>Time</th><th>Examiner</th>
+        <th>Cancel deadline</th><th></th><th>Action</th></tr>
+  </thead>
+  <tbody>
+    {% for b, is_upcoming, cancellable in rows %}
+    <tr>
+      <td>{{ b.id }}</td>
+      <td>{{ b.exam.name }}</td>
+      <td>{{ b.slot.date }}</td>
+      <td>{{ b.slot.start_time.strftime('%H:%M') }} - {{ b.slot.end_time.strftime('%H:%M') }}</td>
+      <td>{{ b.slot.examiner.user.name }}</td>
+      <td>{{ b.exam.booking_end }}</td>
+      <td><span class="badge text-bg-{{ 'primary' if is_upcoming else 'secondary' }}">{{ 'Upcoming' if is_upcoming else 'Past' }}</span></td>
+      <td>
+        {% if cancellable %}
+        <a class="btn btn-sm btn-outline-danger" href="{{ url_for('student.cancel', booking_id=b.id) }}">Cancel</a>
+        {% else %}<span class="text-muted small">Cannot cancel</span>{% endif %}
+      </td>
+    </tr>
+    {% else %}
+    <tr><td colspan="8" class="text-center text-muted">You have no active bookings. <a href="{{ url_for('student.exams') }}">Browse examinations</a></td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}
