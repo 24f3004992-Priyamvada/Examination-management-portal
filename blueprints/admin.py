@@ -3,6 +3,8 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from decorators import role_required
 from extensions import db
 from models import (User, Course, Exam, ExaminerProfile, StudentProfile, Slot, Booking, Rubric, RubricScore, ExamExaminer)
+from collections import Counter
+import services
 
 admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
 
@@ -497,3 +499,80 @@ def exam_publish(exam_id):
         db.session.commit()
         flash("Results published. Students can now see their marks and remarks.", "success")
     return redirect(url_for("admin.exams"))
+
+@admin_bp.route("/bookings/<int:booking_id>/reschedule", methods=["GET", "POST"])
+@role_required("admin")
+def booking_reschedule(booking_id):
+    booking = db.get_or_404(Booking, booking_id)
+    if booking.status != "Booked":
+        flash("Only active bookings can be rescheduled.", "warning")
+        return redirect(url_for("admin.bookings"))
+
+    if request.method == "POST":
+        slot_id = request.form.get("slot_id", "")
+        new_slot = db.session.get(Slot, int(slot_id)) if slot_id.isdigit() else None
+        if new_slot is None:
+            flash("Choose a slot.", "danger")
+        else:
+            error = services.reschedule_booking(booking, new_slot)
+            if error:
+                flash(error, "danger")
+            else:
+                flash("Booking rescheduled.", "success")
+                return redirect(url_for("admin.bookings"))
+
+    options = (Slot.query.filter(Slot.exam_id == booking.exam_id, Slot.status == "Available",
+                                 Slot.available_seats > 0, Slot.id != booking.slot_id)
+               .order_by(Slot.date, Slot.start_time).all())
+    return render_template("admin/reschedule.html", booking=booking, options=options)
+
+
+@admin_bp.route("/slots/<int:slot_id>/examiner", methods=["GET", "POST"])
+@role_required("admin")
+def slot_examiner(slot_id):
+    slot = db.get_or_404(Slot, slot_id)
+    if request.method == "POST":
+        eid = request.form.get("examiner_id", "")
+        new_examiner = db.session.get(ExaminerProfile, int(eid)) if eid.isdigit() else None
+        if new_examiner is None:
+            flash("Choose an examiner.", "danger")
+        else:
+            error = services.change_slot_examiner(slot, new_examiner)
+            if error:
+                flash(error, "danger")
+            else:
+                flash("Examiner changed.", "success")
+                return redirect(url_for("admin.slots"))
+
+    candidates = (ExaminerProfile.query
+                  .join(ExamExaminer, ExamExaminer.examiner_id == ExaminerProfile.id)
+                  .join(User, ExaminerProfile.user_id == User.id)
+                  .filter(ExamExaminer.exam_id == slot.exam_id, ExaminerProfile.status == "Approved",
+                          ExaminerProfile.id != slot.examiner_id)
+                  .order_by(User.name).all())
+    return render_template("admin/slot_examiner.html", slot=slot, candidates=candidates)
+
+
+@admin_bp.route("/analytics")
+@role_required("admin")
+def analytics():
+    all_exams = Exam.query.order_by(Exam.id).all()
+    approved = ExaminerProfile.query.filter_by(status="Approved").all()
+
+    def active(bookings):
+        return [b for b in bookings if b.status != "Cancelled"]
+
+    status_counts = Counter(e.status for e in all_exams)
+    by_day = Counter(b.booked_on.strftime("%Y-%m-%d") for b in Booking.query.all())
+    days = sorted(by_day)
+
+    data = {
+        "per_exam": {"labels": [e.name for e in all_exams],
+                     "values": [len(active(e.bookings)) for e in all_exams]},
+        "workload": {"labels": [p.user.name for p in approved],
+                     "slots": [len(p.slots) for p in approved],
+                     "students": [sum(len(active(s.bookings)) for s in p.slots) for p in approved]},
+        "status": {"labels": list(status_counts.keys()), "values": list(status_counts.values())},
+        "trend": {"labels": days, "values": [by_day[d] for d in days]},
+    }
+    return render_template("admin/analytics.html", data=data)

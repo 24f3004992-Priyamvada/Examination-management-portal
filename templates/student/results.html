@@ -21,6 +21,10 @@
       </tbody>
     </table>
     <p class="mb-0"><strong>Examiner remarks:</strong> {{ b.evaluation.remarks }}</p>
+    <div class="mt-3 d-flex gap-2">
+      <a class="btn btn-sm btn-outline-primary" href="{{ url_for('student.scorecard', booking_id=b.id) }}">Printable scorecard</a>
+      <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('student.scorecard_csv', booking_id=b.id) }}">Download CSV</a>
+    </div>
   </div>
 </div>
 {% else %}

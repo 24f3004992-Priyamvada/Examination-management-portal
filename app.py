@@ -4,6 +4,8 @@ from extensions import db, login_manager
 from models import User
 
 
+
+
 @login_manager.user_loader
 def load_user(user_id):
     return db.session.get(User, int(user_id))
@@ -28,10 +30,12 @@ def create_app():
     from blueprints.admin import admin_bp
     from blueprints.examiner import examiner_bp
     from blueprints.student import student_bp
+    from blueprints.api import api_bp
     app.register_blueprint(auth_bp)
     app.register_blueprint(admin_bp)
     app.register_blueprint(examiner_bp)
     app.register_blueprint(student_bp)
+    app.register_blueprint(api_bp)
 
     with app.app_context():
         db.create_all()

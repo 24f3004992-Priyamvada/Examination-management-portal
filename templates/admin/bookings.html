@@ -34,7 +34,7 @@
 <table class="table table-bordered bg-white align-middle">
   <thead class="table-light">
     <tr><th>Booking ID</th><th>Student</th><th>Examination</th><th>Slot date and time</th>
-        <th>Examiner</th><th>Booked on</th><th>Status</th></tr>
+        <th>Examiner</th><th>Booked on</th><th>Status</th><th>Activity</th><th>Action</th></tr>
   </thead>
   <tbody>
     {% for b in bookings %}
@@ -46,9 +46,19 @@
       <td>{{ b.slot.examiner.user.name }}</td>
       <td>{{ b.booked_on.strftime('%Y-%m-%d %H:%M') }}</td>
       <td>{{ b.status }}</td>
+      <td>
+        {% for h in b.history|sort(attribute='timestamp') %}
+        <div class="small text-muted">{{ h.timestamp.strftime('%d %b %H:%M') }}: {{ h.action }}{% if h.details %} ({{ h.details }}){% endif %}</div>
+        {% endfor %}
+      </td>
+      <td>
+        {% if b.status == 'Booked' and not b.evaluation %}
+        <a class="btn btn-sm btn-outline-primary" href="{{ url_for('admin.booking_reschedule', booking_id=b.id) }}">Reschedule</a>
+        {% else %}<span class="text-muted small">-</span>{% endif %}
+      </td>
     </tr>
     {% else %}
-    <tr><td colspan="7" class="text-center text-muted">No bookings found.</td></tr>
+    <tr><td colspan="9" class="text-center text-muted">No bookings found.</td></tr>
     {% endfor %}
   </tbody>
 </table>

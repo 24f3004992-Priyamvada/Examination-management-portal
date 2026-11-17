@@ -37,7 +37,7 @@
 <table class="table table-bordered bg-white align-middle">
   <thead class="table-light">
     <tr><th>Slot ID</th><th>Examination</th><th>Examiner</th><th>Date</th><th>Time</th>
-        <th>Capacity</th><th>Available</th><th>Booked</th><th>Status</th></tr>
+        <th>Capacity</th><th>Available</th><th>Booked</th><th>Status</th><th>Action</th></tr>
   </thead>
   <tbody>
     {% for s in slots %}
@@ -51,9 +51,14 @@
       <td>{{ s.available_seats }}</td>
       <td>{{ s.bookings|selectattr('status', 'equalto', 'Booked')|list|length }}</td>
       <td>{{ s.status }}</td>
+      <td>
+        {% if s.status not in ['Completed', 'Cancelled'] %}
+        <a class="btn btn-sm btn-outline-primary" href="{{ url_for('admin.slot_examiner', slot_id=s.id) }}">Change examiner</a>
+        {% else %}<span class="text-muted small">-</span>{% endif %}
+      </td>
     </tr>
     {% else %}
-    <tr><td colspan="9" class="text-center text-muted">No slots found.</td></tr>
+    <tr><td colspan="10" class="text-center text-muted">No slots found.</td></tr>
     {% endfor %}
   </tbody>
 </table>

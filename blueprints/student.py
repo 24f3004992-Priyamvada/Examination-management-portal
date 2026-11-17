@@ -1,3 +1,5 @@
+import csv
+import io
 from datetime import date, datetime
 from flask import Blueprint, render_template, request, redirect, url_for, flash, abort
 from flask_login import current_user
@@ -201,3 +203,42 @@ def profile():
             flash("Profile updated.", "success")
             return redirect(url_for("student.profile"))
     return render_template("student/profile.html", me=me)
+
+def scorecard_booking(booking_id):
+    me = current_user.student_profile
+    booking = db.get_or_404(Booking, booking_id)
+    if booking.student_id != me.id:
+        abort(403)
+    if not (booking.evaluation and booking.exam.results_published):
+        abort(404)
+    return booking
+
+
+@student_bp.route("/results/<int:booking_id>/scorecard")
+@role_required("student")
+def scorecard(booking_id):
+    booking = scorecard_booking(booking_id)
+    max_total = sum(r.max_marks for r in booking.exam.rubrics)
+    return render_template("student/scorecard.html", booking=booking, max_total=max_total, generated=datetime.now())
+
+
+@student_bp.route("/results/<int:booking_id>/scorecard.csv")
+@role_required("student")
+def scorecard_csv(booking_id):
+    booking = scorecard_booking(booking_id)
+    max_total = sum(r.max_marks for r in booking.exam.rubrics)
+    out = io.StringIO()
+    w = csv.writer(out)
+    w.writerow(["Student", booking.student.user.name])
+    w.writerow(["Roll number", booking.student.roll_no])
+    w.writerow(["Examination", booking.exam.name])
+    w.writerow(["Course", booking.exam.course.code])
+    w.writerow(["Date", booking.slot.date.isoformat()])
+    w.writerow(["Examiner", booking.slot.examiner.user.name])
+    w.writerow([])
+    w.writerow(["Criterion", "Awarded", "Maximum"])
+    for s in booking.evaluation.scores:
+        w.writerow([s.rubric.criterion, s.marks, s.rubric.max_marks])
+    w.writerow(["Total", booking.evaluation.total_marks, max_total])
+    w.writerow(["Remarks", booking.evaluation.remarks])
+    return Response(out.getvalue(), mimetype="text/csv", headers={"Content-Disposition": f"attachment; filename=scorecard_{booking.id}.csv"})

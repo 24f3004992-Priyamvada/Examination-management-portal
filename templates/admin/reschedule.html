@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}Reschedule booking{% endblock %}
+{% block content %}
+<a href="{{ url_for('admin.bookings') }}" class="btn btn-sm btn-outline-secondary mb-3">&larr; Back to bookings</a>
+<h3>Reschedule booking {{ booking.id }}</h3>
+<p class="text-muted">
+  Student: {{ booking.student.user.name }} ({{ booking.student.roll_no }}) | Examination: {{ booking.exam.name }}<br>
+  Current slot: {{ booking.slot.date }}, {{ booking.slot.start_time.strftime('%H:%M') }} - {{ booking.slot.end_time.strftime('%H:%M') }}
+  with {{ booking.slot.examiner.user.name }}
+</p>
+
+<form method="post">
+  <table class="table table-bordered bg-white align-middle">
+    <thead class="table-light">
+      <tr><th></th><th>Slot ID</th><th>Date</th><th>Time</th><th>Examiner</th><th>Seats left</th></tr>
+    </thead>
+    <tbody>
+      {% for s in options %}
+      <tr>
+        <td><input type="radio" name="slot_id" value="{{ s.id }}" required></td>
+        <td>{{ s.id }}</td>
+        <td>{{ s.date }}</td>
+        <td>{{ s.start_time.strftime('%H:%M') }} - {{ s.end_time.strftime('%H:%M') }}</td>
+        <td>{{ s.examiner.user.name }}</td>
+        <td>{{ s.available_seats }}</td>
+      </tr>
+      {% else %}
+      <tr><td colspan="6" class="text-center text-muted">No other available slots for this examination.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% if options %}<button class="btn btn-primary">Move booking</button>{% endif %}
+</form>
+{% endblock %}

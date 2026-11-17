@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Scorecard</title>
+  <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet">
+  <style>@media print { .no-print { display: none; } }</style>
+</head>
+<body>
+<div class="container my-4" style="max-width: 800px;">
+  <div class="no-print d-flex gap-2 mb-3">
+    <button class="btn btn-primary" onclick="window.print()">Print or save as PDF</button>
+    <a class="btn btn-outline-secondary" href="{{ url_for('student.results') }}">Back</a>
+  </div>
+  <div class="border p-4">
+    <h3 class="text-center mb-4">Examination Scorecard</h3>
+    <dl class="row">
+      <dt class="col-sm-4">Student</dt><dd class="col-sm-8">{{ booking.student.user.name }}</dd>
+      <dt class="col-sm-4">Roll number</dt><dd class="col-sm-8">{{ booking.student.roll_no }}</dd>
+      <dt class="col-sm-4">Examination</dt><dd class="col-sm-8">{{ booking.exam.name }} ({{ booking.exam.exam_type }})</dd>
+      <dt class="col-sm-4">Course</dt><dd class="col-sm-8">{{ booking.exam.course.code }} - {{ booking.exam.course.name }}</dd>
+      <dt class="col-sm-4">Date</dt><dd class="col-sm-8">{{ booking.slot.date }}</dd>
+      <dt class="col-sm-4">Examiner</dt><dd class="col-sm-8">{{ booking.slot.examiner.user.name }}</dd>
+    </dl>
+    <table class="table table-bordered">
+      <thead class="table-light"><tr><th>Criterion</th><th>Awarded</th><th>Maximum</th></tr></thead>
+      <tbody>
+        {% for s in booking.evaluation.scores %}
+        <tr><td>{{ s.rubric.criterion }}</td><td>{{ s.marks }}</td><td>{{ s.rubric.max_marks }}</td></tr>
+        {% endfor %}
+        <tr class="table-light">
+          <th>Total</th><th>{{ booking.evaluation.total_marks }}</th><th>{{ max_total }}</th>
+        </tr>
+      </tbody>
+    </table>
+    {% if max_total %}
+    <p><strong>Percentage:</strong> {{ (booking.evaluation.total_marks / max_total * 100)|round(1) }}%</p>
+    {% endif %}
+    <p><strong>Examiner remarks:</strong> {{ booking.evaluation.remarks }}</p>
+    <p class="text-muted small mb-0">Generated on {{ generated.strftime('%Y-%m-%d %H:%M') }}</p>
+  </div>
+</div>
+</body>
+</html>
